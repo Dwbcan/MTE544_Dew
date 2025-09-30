@@ -24,7 +24,14 @@ class Logger:
             vals_str=""
 
             # TODO Part 5: Write the values from the list to the file
-            ...
+            # If an element is a list/tuple (e.g., Laser ranges), convert it to a compact string.
+            for i, v in enumerate(values_list):
+                if isinstance(v, (list, tuple)):
+                    # Join lists as a single semicolon-separated field so it remains one CSV cell
+                    vals_str += ";".join(str(x) for x in v)
+                else:
+                    vals_str += str(v)
+                vals_str += ", "
             
             vals_str+="\n"
             
@@ -85,7 +92,12 @@ def euler_from_quaternion(quat):
     Convert quaternion (w in last place) to euler roll, pitch, yaw.
     quat = [x, y, z, w]
     """
-    ... # just unpack yaw
+    # just unpack yaw
+    x, y, z, w = quat
+
+    # Yaw (Z-axis rotation) using yaw-pitch-roll (Z-Y-X) convention
+    siny_cosp = 2.0 * (w * z + x * y)
+    cosy_cosp = 1.0 - 2.0 * (y * y + z * z)
+    yaw = atan2(siny_cosp, cosy_cosp)
+
     return yaw
-
-
