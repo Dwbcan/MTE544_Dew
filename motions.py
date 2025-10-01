@@ -56,7 +56,7 @@ class motion_executioner(Node):
         # TODO Part 3: Create the QoS profile by setting the proper parameters in (...)
         qos=QoSProfile(
             depth=10,
-            reliability=QoSReliabilityPolicy.RELIABLE,
+            reliability=QoSReliabilityPolicy.BEST_EFFORT,
             history=QoSHistoryPolicy.KEEP_LAST,
             durability=QoSDurabilityPolicy.VOLATILE
         )
@@ -138,6 +138,7 @@ class motion_executioner(Node):
                         
         elif self.type==ACC_LINE:
             cmd_vel_msg=self.make_acc_line_twist()
+
             
         else:
             print("type not set successfully, 0: CIRCLE 1: SPIRAL and 2: ACCELERATED LINE")
