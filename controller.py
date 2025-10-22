@@ -15,22 +15,10 @@ class controller:
     def __init__(self, klp=0.2, klv=0.2, kli=0.2, kap=0.2, kav=0.2, kai=0.2):
         
         # TODO Part 5 and 6: Modify the below lines to test your PD, PI, and PID controller
-        # For testing P controller (current setting):
         self.PID_linear=PID_ctrl(P, klp, klv, kli, filename_="linear.csv")
         self.PID_angular=PID_ctrl(P, kap, kav, kai, filename_="angular.csv")
 
-        # For testing PD controller:
-        self.PID_linear=PID_ctrl(PD, klp, klv, kli, filename_="linear.csv")
-        self.PID_angular=PID_ctrl(PD, kap, kav, kai, filename_="angular.csv")
-
-        # For testing PI controller:
-        self.PID_linear=PID_ctrl(PI, klp, klv, kli, filename_="linear.csv")
-        self.PID_angular=PID_ctrl(PI, kap, kav, kai, filename_="angular.csv")
-
-        # For testing PID controller:
-        self.PID_linear=PID_ctrl(PID, klp, klv, kli, filename_="linear.csv")
-        self.PID_angular=PID_ctrl(PID, kap, kav, kai, filename_="angular.csv")
-            
+    
     def vel_request(self, pose, goal, status):
         
         e_lin=calculate_linear_error(pose, goal)
@@ -69,8 +57,8 @@ class trajectoryController(controller):
 
         # TODO Part 5: Add saturation limits for the robot linear and angular velocity (hint: you can use np.clip function)
 
-        linear_vel = np.clip(linear_vel, -0.22, 0.22)  # Use 0.31 for real robot
-        angular_vel = np.clip(angular_vel, -2.84, 2.84)  # Use 1.9 for real robot
+        linear_vel = np.clip(linear_vel, -0.22, 0.22)  
+        angular_vel = np.clip(angular_vel, -2.84, 2.84) 
         
         return linear_vel, angular_vel
 

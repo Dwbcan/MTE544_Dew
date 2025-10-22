@@ -66,7 +66,7 @@ class decision_maker(Node):
     def timerCallback(self):
         
         # TODO Part 3: Run the localization node
-        ...    # Remember that this file is already running the decision_maker node.
+        spin_once(self.localizer)    # Remember that this file is already running the decision_maker node.
 
         if self.localizer.getPose()  is  None:
             print("waiting for odom msgs ....")
@@ -122,7 +122,8 @@ def main(args=None):
             motion_type=POINT_PLANNER
         )
     elif args.motion.lower() == "trajectory":
-        DM=decision_maker(            publisher_msg=Twist,
+        DM=decision_maker(
+            publisher_msg=Twist,
             publishing_topic='/cmd_vel',
             qos_publisher=10,
             goalPoint=[0.0, 0.0],  # Not used for trajectory
