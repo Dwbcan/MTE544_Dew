@@ -1,8 +1,16 @@
 import matplotlib.pyplot as plt
 from utilities import FileReader
 
-
-
+def get_controller_type(filename):
+    if '_p.' in filename.lower():
+        return "P Controller"
+    elif '_pid.' in filename.lower():
+        return "PID Controller"
+    elif '_parabola.' in filename.lower():
+        return "Parabola Trajectory"
+    elif '_sigmoid.' in filename.lower():
+        return "Sigmoid Trajectory"
+    return "Controller"
 
 def plot_errors(filename):
     
@@ -15,23 +23,42 @@ def plot_errors(filename):
     for val in values:
         time_list.append(val[-1] - first_stamp)
 
+    fig = plt.figure(figsize=(15,10))
+    gs = plt.GridSpec(3, 2, figure=fig, width_ratios=[1, 1])
     
-    
-    fig, axes = plt.subplots(1,2, figsize=(14,6))
+    ax1 = fig.add_subplot(gs[:, 0])
+    ax1.plot([lin[0] for lin in values], [lin[1] for lin in values])
+    controller_type = get_controller_type(filename)
+    ax1.set_title(f"Linear Error Phase Plot\n({controller_type})")
+    ax1.set_xlabel("e_linear (m)")
+    ax1.set_ylabel("e_dot_linear (m/s)")
+    ax1.grid(True)
 
+    # Error
+    ax2 = fig.add_subplot(gs[0, 1])
+    ax2.plot(time_list, [lin[0] for lin in values], 'b-')
+    ax2.set_title("Linear Error")
+    ax2.set_ylabel("e_linear (m)")
+    ax2.grid(True)
+    ax2.set_xticklabels([])
 
-    axes[0].plot([lin[0] for lin in values], [lin[1] for lin in values])
-    axes[0].set_title("state space")
-    axes[0].grid()
+    # Error derivative
+    ax3 = fig.add_subplot(gs[1, 1])
+    ax3.plot(time_list, [lin[1] for lin in values], 'orange')
+    ax3.set_title("Linear Error Derivative")
+    ax3.set_ylabel("e_dot_linear (m/s)")
+    ax3.grid(True)
+    ax3.set_xticklabels([])
 
-    
-    axes[1].set_title("each individual state")
-    for i in range(0, len(headers) - 1):
-        axes[1].plot(time_list, [lin[i] for lin in values], label= headers[i]+ " linear")
+    # Error integral
+    ax4 = fig.add_subplot(gs[2, 1])
+    ax4.plot(time_list, [lin[2] for lin in values], 'g-')
+    ax4.set_title("Linear Error Integral")
+    ax4.set_xlabel("Time (nanoseconds)")
+    ax4.set_ylabel("e_int_linear (m·s)")
+    ax4.grid(True)
 
-    axes[1].legend()
-    axes[1].grid()
-
+    plt.tight_layout()
     plt.show()
     
     
