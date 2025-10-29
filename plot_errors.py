@@ -12,6 +12,12 @@ def get_controller_type(filename):
         return "Sigmoid Trajectory"
     return "Controller"
 
+def get_error_type(filename):
+    if 'angular' in filename.lower():
+        return "Angular"
+    else:
+        return "Linear"
+
 def plot_errors(filename):
     
     headers, values=FileReader(filename).read_file()
@@ -26,36 +32,40 @@ def plot_errors(filename):
     fig = plt.figure(figsize=(15,10))
     gs = plt.GridSpec(3, 2, figure=fig, width_ratios=[1, 1])
     
+    # Determine if this is angular or linear error
+    error_type = get_error_type(filename)
+    units = "rad" if error_type == "Angular" else "m"
+    
     ax1 = fig.add_subplot(gs[:, 0])
     ax1.plot([lin[0] for lin in values], [lin[1] for lin in values])
     controller_type = get_controller_type(filename)
-    ax1.set_title(f"Linear Error Phase Plot\n({controller_type})")
-    ax1.set_xlabel("e_linear (m)")
-    ax1.set_ylabel("e_dot_linear (m/s)")
+    ax1.set_title(f"{error_type} Error Phase Plot\n({controller_type})")
+    ax1.set_xlabel(f"e_{error_type.lower()} ({units})")
+    ax1.set_ylabel(f"e_dot_{error_type.lower()} ({units}/s)")
     ax1.grid(True)
 
     # Error
     ax2 = fig.add_subplot(gs[0, 1])
     ax2.plot(time_list, [lin[0] for lin in values], 'b-')
-    ax2.set_title("Linear Error")
-    ax2.set_ylabel("e_linear (m)")
+    ax2.set_title(f"{error_type} Error")
+    ax2.set_ylabel(f"e_{error_type.lower()} ({units})")
     ax2.grid(True)
     ax2.set_xticklabels([])
 
     # Error derivative
     ax3 = fig.add_subplot(gs[1, 1])
     ax3.plot(time_list, [lin[1] for lin in values], 'orange')
-    ax3.set_title("Linear Error Derivative")
-    ax3.set_ylabel("e_dot_linear (m/s)")
+    ax3.set_title(f"{error_type} Error Derivative")
+    ax3.set_ylabel(f"e_dot_{error_type.lower()} ({units}/s)")
     ax3.grid(True)
     ax3.set_xticklabels([])
 
     # Error integral
     ax4 = fig.add_subplot(gs[2, 1])
     ax4.plot(time_list, [lin[2] for lin in values], 'g-')
-    ax4.set_title("Linear Error Integral")
+    ax4.set_title(f"{error_type} Error Integral")
     ax4.set_xlabel("Time (nanoseconds)")
-    ax4.set_ylabel("e_int_linear (m·s)")
+    ax4.set_ylabel(f"e_int_{error_type.lower()} ({units}·s)")
     ax4.grid(True)
 
     plt.tight_layout()
