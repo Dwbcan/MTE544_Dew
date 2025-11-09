@@ -18,9 +18,22 @@ class particle:
         w: angular velocity
         dt: time step
         """
-        self.pose[0] += ...
-        self.pose[1] += ...
-        self.pose[2] += ...
+        # Unicycle (differential-drive) motion model
+        theta = self.pose[2]
+
+        if abs(w) < 1e-6:
+            # Straight motion
+            dx = v * np.cos(theta) * dt
+            dy = v * np.sin(theta) * dt
+        else:
+            # Exact integration for constant v and w over dt
+            dx = (v / w) * (np.sin(theta + w * dt) - np.sin(theta))
+            dy = (v / w) * (-np.cos(theta + w * dt) + np.cos(theta))
+
+        # Update pose
+        self.pose[0] += dx
+        self.pose[1] += dy
+        self.pose[2] = normalize_angle(theta + w * dt)
 
     # TODO: You need to explain the following function to TA
     def calculateParticleWeight(self, scanOutput: LaserScan, mapManipulatorInstance: mapManipulator, laser_to_ego_transformation: np.array):
