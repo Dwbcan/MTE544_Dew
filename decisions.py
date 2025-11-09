@@ -31,7 +31,7 @@ import time
 class decision_maker(Node):
     
     
-    def __init__(self, publisher_msg, publishing_topic, qos_publisher, rate=10, motion_type=POINT_PLANNER):
+    def __init__(self, publisher_msg, publishing_topic, qos_publisher, rate=10, motion_type=POINT_PLANNER, localization_type=particlesFilter):
 
         super().__init__("decision_maker")
 
@@ -46,7 +46,18 @@ class decision_maker(Node):
         self.reachThreshold=0.1
 
         # TODO part 5: call the proper types
-        self.localizer=localization(...)
+        # Support either passing the numeric constants (rawSensors/particlesFilter)
+        # or a string like 'raw' or 'pf'.
+        if isinstance(localization_type, str):
+            lt = localization_type.lower()
+            if lt in ('pf', 'particle', 'particlefilter'):
+                loc_type = particlesFilter
+            else:
+                loc_type = rawSensors
+        else:
+            loc_type = localization_type
+
+        self.localizer = localization(loc_type)
         
         if motion_type==POINT_PLANNER:
             self.controller=controller(klp=0.05, klv=0.0, kap=0.8, kav=0.0)      
@@ -140,10 +151,12 @@ def main(args=None):
     
     odom_qos=QoSProfile(reliability=2, durability=2, history=1, depth=10)
     
+    loc_arg = args.localization if hasattr(args, 'localization') else 'pf'
+
     if args.motion == "point":
-        DM=decision_maker(Twist, "/cmd_vel", 10, motion_type=POINT_PLANNER)
+        DM=decision_maker(Twist, "/cmd_vel", 10, motion_type=POINT_PLANNER, localization_type=loc_arg)
     elif args.motion == "trajectory":
-        DM=decision_maker(Twist, "/cmd_vel", 10, motion_type=TRAJECTORY_PLANNER)
+        DM=decision_maker(Twist, "/cmd_vel", 10, motion_type=TRAJECTORY_PLANNER, localization_type=loc_arg)
     else:
         print("invalid motion type", file=sys.stderr)
 
@@ -160,6 +173,7 @@ def main(args=None):
 if __name__=="__main__":
     argParser=argparse.ArgumentParser(description="point or trajectory") 
     argParser.add_argument("--motion", type=str, default="point")
+    argParser.add_argument("--localization", type=str, default="pf", choices=["pf","raw"], help="localization type: 'pf' for particle filter, 'raw' for raw odom")
     args = argParser.parse_args()
 
     main(args)
