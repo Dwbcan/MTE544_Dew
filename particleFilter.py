@@ -100,12 +100,19 @@ class particleFilter(Node):
         numParticles = self.numParticles
 
         # TODO: generate the particles around the initial pose (x, y, th) (you should use the std_particle_x, std_particle_y, std_particle_theta)
-        self.particlePoses = ... #size should be (numParticles, 3)
+        # sample from Gaussians centered at the provided initial pose
+        xs = np.random.normal(loc=x, scale=self.std_particle_x, size=numParticles)
+        ys = np.random.normal(loc=y, scale=self.std_particle_y, size=numParticles)
+        ths = np.random.normal(loc=th, scale=self.std_particle_theta, size=numParticles)
 
-        self.particles = [particle(particle_, 1/numParticles) for particle_ in
-                          self.particlePoses]
+        # store poses as a (N,3) numpy array for downstream usage
+        self.particlePoses = np.column_stack((xs, ys, ths))  # shape (numParticles, 3)
 
-        self.weights = [1/numParticles] * numParticles
+        # create particle objects with equal initial weight
+        self.particles = [particle(list(self.particlePoses[i]), 1.0/numParticles) for i in range(numParticles)]
+
+        # weights array used in computations
+        self.weights = np.ones(numParticles) * (1.0/numParticles)
 
         self.initialized = True
 
@@ -173,17 +180,21 @@ class particleFilter(Node):
         particles_weights = particles_weights / np.sum(particles_weights)
         
         # TODO: randomly sampling N particles from the list of particles based on their weights (hint: use np.random.choice)
-        sampled_particles = ...
+        # sample indices with replacement according to the normalized weights
+        sampled_indices = np.random.choice(len(self.particles), size=len(self.particles), replace=True, p=particles_weights)
+        sampled_particles = [self.particles[i] for i in sampled_indices]
 
         for bp in sampled_particles:
             x, y, th = bp.getPose()
             # TODO: add noise to the x, y, and th, use the same std_noise for x, y, and th
-            new_x = x + ...
-            new_y = y + ...
-            new_th = th + ...
+            new_x = x + np.random.normal(0.0, std_noise)
+            new_y = y + np.random.normal(0.0, std_noise)
+            new_th = th + np.random.normal(0.0, std_noise)
 
-            new_particle = particle([new_x, new_y, new_th], bp.getWeight())
+            # initialize with uniform weight; will be updated by calculateParticleWeight
+            new_particle = particle([new_x, new_y, new_th], 1.0/len(self.particles))
 
+            # compute weight according to the sensor model and map
             new_particle.calculateParticleWeight(
                 laser_scan, mapUtilInstance, self.laser_to_ego_transform)
 
