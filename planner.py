@@ -45,14 +45,18 @@ class planner:
         endPoseCart = np.array(endPoseCart)[:2]
 
         # TODO: Convert to pixel coordinates using the m_utilites
-        startPose = self.m_utilites...
-        endPose = self.m_utilites...
+        # mapManipulator.position_2_cell expects an Nx2 array and returns Nx2 cell indices
+        start_cell = self.m_utilites.position_2_cell(np.array([startPoseCart]))[0]
+        end_cell = self.m_utilites.position_2_cell(np.array([endPoseCart]))[0]
 
-        # convert to tuple
-        startPose = (startPose[0], startPose[1])
-        endPose = (endPose[0], endPose[1])
-        # TODO: Call the A* search algorithm
-        path = ...
+        startPose = start_cell
+        endPose = end_cell
+
+        # convert to tuple (row, col)
+        startPose = (int(startPose[0]), int(startPose[1]))
+        endPose = (int(endPose[0]), int(endPose[1]))
+        # Call the A* search algorithm on the likelihood/cost map
+        path = search(self.costMap, startPose, endPose)
         if path is None:
             return None
         
